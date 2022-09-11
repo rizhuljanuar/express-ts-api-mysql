@@ -1,16 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import user from "../models/UserModel";
-
-interface bodyType {
-  name: String;
-  email: String;
-  gender: String;
-}
+import { UserInterface } from "../interfaces/UserInterface";
+import * as UserService from "../services/UserService";
 
 class User {
   async get(_req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await user.findAll();
+      const response = await UserService.findAll();
       return res.status(200).json(response);
     } catch (error) {
       return next(error);
@@ -19,12 +14,8 @@ class User {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const response = await user.findOne({
-        where: {
-          id,
-        },
-      });
+      const id: number = parseInt(req.params.id);
+      const response = await UserService.findOne(id);
 
       return res.status(200).json(response);
     } catch (error) {
@@ -34,13 +25,14 @@ class User {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const body: bodyType = req.body;
+      const body: UserInterface = req.body;
+
       const payload = {
         name: body.name,
         email: body.email,
         gender: body.gender,
       };
-      await user.create(payload);
+      await UserService.create(payload);
 
       return res.status(201).json({ msg: "User created" });
     } catch (error) {
@@ -50,19 +42,15 @@ class User {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const body: bodyType = req.body;
+      const id: number = parseInt(req.params.id);
+      const body: UserInterface = req.body;
       const payload = {
         name: body.name,
         email: body.email,
         gender: body.gender,
       };
 
-      await user.update(payload, {
-        where: {
-          id,
-        },
-      });
+      await UserService.update(id, payload);
 
       return res.status(200).json({ msg: "User updated" });
     } catch (error) {
@@ -72,13 +60,9 @@ class User {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id: number = parseInt(req.params.id);
 
-      await user.destroy({
-        where: {
-          id,
-        },
-      });
+      await UserService.destroy(id);
 
       return res.status(200).json({ msg: "User deleted" });
     } catch (error) {
